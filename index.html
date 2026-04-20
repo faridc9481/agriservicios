@@ -503,6 +503,13 @@ tfoot td{background:var(--gf);font-weight:700}
 
     <!-- NÓMINA -->
     <div class="page" id="p-nom">
+      <div class="tabs">
+        <button class="tab on" onclick="swNom('liq',this)">Liquidación quincena</button>
+        <button class="tab" onclick="swNom('ico',this)">Informe por coordinador</button>
+      </div>
+
+      <!-- LIQUIDACIÓN -->
+      <div id="nom-liq">
       <div class="card no-print">
         <div class="ct">Liquidación por quincena</div>
         <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
@@ -522,7 +529,7 @@ tfoot td{background:var(--gf);font-weight:700}
           <div class="st"><div class="sl">Total a pagar</div><div class="sv gn" id="nom-tot" style="font-size:15px">$0</div></div>
         </div>
         <div class="card"><div class="tw"><table id="nom-t"><thead><tr><th>Empleado / Cédula</th><th>Cálculo por semana (salario ÷ divisor × días quincena)</th><th>Días auxilio transp.</th><th>Salario quincena</th><th style="color:var(--n)">Aux. alimentación</th><th>Aux. transporte</th><th>Total a pagar</th></tr></thead><tbody id="nom-tb"></tbody><tfoot id="nom-tf"></tfoot></table></div></div>
-        <div class="card" style="margin-top:4px"><div class="ct">Detalle de cálculo por empleado</div><div id="nom-det-wrap"><div style="text-align:center;padding:20px;color:var(--g3)">Presiona Calcular nómina para ver el detalle.</div></div></div>
+        <div class="card" style="margin-top:4px"><div class="ct" style="cursor:pointer;user-select:none" onclick="togSection('nom-det-wrap','nom-det-ico')">Detalle de cálculo por empleado <span id="nom-det-ico" style="float:right;font-size:13px">▼ expandir</span></div><div id="nom-det-wrap" style="display:none"><div style="text-align:center;padding:20px;color:var(--g3)">Presiona Calcular nómina para ver el detalle.</div></div></div>
       </div>
 
       <!-- SECCIÓN VIGILANCIA MAQUINARIA -->
@@ -586,10 +593,12 @@ tfoot td{background:var(--gf);font-weight:700}
 
         <!-- Tabla de turnos ingresados -->
         <div id="vig-turnos-wrap" style="display:none;margin-bottom:12px">
-          <div style="font-size:11px;font-weight:600;color:var(--g2);margin-bottom:4px">Turnos ingresados:</div>
+          <div style="font-size:11px;font-weight:600;color:var(--g2);margin-bottom:4px;cursor:pointer;user-select:none" onclick="togSection('vig-turnos-body','vig-turnos-ico')">Turnos ingresados <span id="vig-turnos-ico" style="color:var(--g3)">▼</span></div>
+          <div id="vig-turnos-body">
           <div class="tw"><table id="vig-turnos-t"><thead><tr>
             <th>Empleado</th><th>Fecha</th><th>Tipo</th><th>Hs diurnas</th><th>Hs nocturnas</th><th>Dom/Fest</th><th class="no-print">✕</th>
           </tr></thead><tbody id="vig-turnos-tb"></tbody></table></div>
+          </div>
         </div>
 
         <!-- Botón liquidar -->
@@ -615,6 +624,54 @@ tfoot td{background:var(--gf);font-weight:700}
           <!-- Detalle por tipo de hora -->
           <div id="vig-det-wrap" style="margin-top:8px"></div>
         </div>
+      </div>
+      </div> <!-- end nom-liq -->
+
+      <!-- INFORME POR COORDINADOR -->
+      <div id="nom-ico" style="display:none">
+        <div class="card no-print">
+          <div class="ct">Informe de devengo por coordinador</div>
+          <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+            <div class="fld" style="flex:2;min-width:200px"><label>Quincena</label><select id="ico-q"></select></div>
+            <div class="fld" style="flex:1;min-width:150px"><label>Sede</label>
+              <select id="ico-sede">
+                <option value="">Todas</option>
+                <option value="NORTE">NORTE</option>
+                <option value="SUR">SUR</option>
+              </select>
+            </div>
+            <button class="btn bn" onclick="calcIco()" style="height:34px;margin-top:16px">Generar informe</button>
+            <button class="btn bg" onclick="expCSV('ico-t','informe_coordinadores')" style="height:34px;margin-top:16px">📥 Excel</button>
+          </div>
+        </div>
+
+        <!-- Resumen stats -->
+        <div class="sg" id="ico-sg" style="display:none;grid-template-columns:repeat(4,1fr)">
+          <div class="st"><div class="sl">Coordinadores</div><div class="sv" id="ico-nc">0</div></div>
+          <div class="st"><div class="sl">Empleados vigilancia</div><div class="sv gf" id="ico-ne">0</div></div>
+          <div class="st"><div class="sl">Total labores normales</div><div class="sv gv" id="ico-tl" style="font-size:14px">$0</div></div>
+          <div class="st"><div class="sl">Total vigilancia</div><div class="sv gf" id="ico-tv" style="font-size:14px">$0</div></div>
+        </div>
+
+        <!-- Tabla resumen por coordinador -->
+        <div class="card" id="ico-res" style="display:none">
+          <div class="ct">Resumen por coordinador
+            <span style="font-size:11px;font-weight:400;color:var(--g3)" id="ico-qna-lbl"></span>
+          </div>
+          <div class="tw"><table id="ico-t"><thead><tr>
+            <th>Coordinador</th>
+            <th>Admin campo</th>
+            <th>Empleados labores</th>
+            <th>Total labores normales</th>
+            <th>Empleados vigilancia</th>
+            <th>Total vigilancia</th>
+            <th>Total devengo</th>
+          </tr></thead><tbody id="ico-tb"></tbody>
+          <tfoot id="ico-tf"></tfoot></table></div>
+        </div>
+
+        <!-- Detalle por coordinador -->
+        <div id="ico-det"></div>
       </div>
     </div>
 
@@ -713,16 +770,43 @@ tfoot td{background:var(--gf);font-weight:700}
     <!-- EMPLEADOS -->
     <div class="page" id="p-emp">
       <div class="card">
-        <div class="sw"><span class="sico">🔍</span><input type="text" id="eq" placeholder="Buscar nombre o cédula..." oninput="filtEmp()"/></div>
-        <div class="tw"><table><thead><tr><th>Cédula</th><th>Nombre</th></tr></thead><tbody id="emp-tb"></tbody></table></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="sw" style="flex:2;min-width:180px"><span class="sico">🔍</span><input type="text" id="eq" placeholder="Buscar nombre o cédula..." oninput="filtEmp()"/></div>
+          <div class="fld" style="min-width:130px;margin:0">
+            <select id="eq-sede" onchange="filtEmp()" style="margin:0">
+              <option value="">Todas las sedes</option>
+              <option value="NORTE">NORTE</option>
+              <option value="SUR">SUR</option>
+            </select>
+          </div>
+          <span id="eq-count" style="font-size:11px;color:var(--g3)"></span>
+        </div>
+        <div class="tw"><table><thead><tr>
+          <th onclick="sortTable('emp-t',0)" style="cursor:pointer">Cédula ↕</th>
+          <th onclick="sortTable('emp-t',1)" style="cursor:pointer">Nombre ↕</th>
+          <th>Sede</th>
+        </tr></thead><tbody id="emp-tb"></tbody></table></div>
       </div>
     </div>
 
     <!-- TARIFAS -->
     <div class="page" id="p-tar">
       <div class="card">
-        <div class="sw"><span class="sico">🔍</span><input type="text" id="tq" placeholder="Buscar tarifa..." oninput="filtTar()"/></div>
-        <div class="tw"><table><thead><tr><th>Código</th><th>Descripción</th><th>Unidad</th><th>Pago colaborador</th><th>Cobro Riopaila</th></tr></thead><tbody id="tar-tb"></tbody></table></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="sw" style="flex:2;min-width:180px"><span class="sico">🔍</span><input type="text" id="tq" placeholder="Buscar tarifa o código..." oninput="filtTar()"/></div>
+          <div class="fld" style="min-width:130px;margin:0">
+            <select id="tq-sede" onchange="filtTar()" style="margin:0">
+              <option value="">Todas las sedes</option>
+              <option value="NORTE">NORTE</option>
+              <option value="SUR">SUR</option>
+            </select>
+          </div>
+          <span id="tq-count" style="font-size:11px;color:var(--g3)"></span>
+        </div>
+        <div class="tw"><table><thead><tr>
+          <th>Código</th><th>Descripción</th><th>Unidad</th>
+          <th>Pago colaborador</th><th>Cobro Riopaila</th><th>Sede</th>
+        </tr></thead><tbody id="tar-tb"></tbody></table></div>
       </div>
     </div>
   </main>
@@ -1430,6 +1514,14 @@ function poblarSelsSems(){
   // Coords en motobomba
   var mbc=document.getElementById('mb-co'); if(mbc){var mbCoords=COORDS&&COORDS.length?COORDS:Object.keys(USUARIOS.c).map(function(c){return{coord:c};});mbCoords.forEach(function(c){var o=document.createElement('option');o.value=c.coord;o.textContent=c.coord;mbc.appendChild(o);});}
   // Quincenas
+  var icoq=document.getElementById('ico-q');
+  if(icoq){QNAS.forEach(function(q){
+    var o=document.createElement('option');
+    o.value=q.id;
+    var semsStr=q.sems?q.sems.map(function(s){return 'S'+parseInt(s.s)+'('+s.d+'d)';}).join(' '):'';
+    o.textContent=q.n+(semsStr?' ['+semsStr+']':'');
+    icoq.appendChild(o);
+  });if(QNAS.length)icoq.value=QNAS[0].id;}
   var qsel=document.getElementById('nom-q');
   if(qsel){QNAS.forEach(function(q){
     var o=document.createElement('option');
@@ -1458,7 +1550,7 @@ function buildNav(){
   var nav=document.getElementById('sb-nav');
   var cc=S.rol==='c'?'vc':S.rol==='a'?'ac':S.rol==='n'?'nc':'fc';
   if(S.rol==='c'){
-    nav.innerHTML='<div class="sb-sec">Principal</div><button class="ni" onclick="go(\'dc\')"><span class="ni-ico">📊</span>Dashboard</button><button class="ni" onclick="go(\'registro\')"><span class="ni-ico">➕</span>Nuevo registro</button><button class="ni" onclick="go(\'mis-reg\')"><span class="ni-ico">📋</span>Mis registros</button>';
+    nav.innerHTML='<div class="sb-sec">Principal</div><button class="ni" onclick="go(\'dc\')"><span class="ni-ico">📊</span>Dashboard</button><button class="ni" onclick="go(\'registro\')"><span class="ni-ico">➕</span>Nuevo registro</button><button class="ni" onclick="go(\'mis-reg\')"><span class="ni-ico">📋</span>Mis registros</button><button class="ni" onclick="go(\'tar\');filtTar()"><span class="ni-ico">💰</span>Tarifas</button>';
   } else if(S.rol==='a'){
     nav.innerHTML='<div class="sb-sec">Dashboard</div><button class="ni" onclick="go(\'da\')"><span class="ni-ico">📊</span>Resumen general</button><div class="sb-sec">Informes</div><button class="ni" onclick="go(\'inf\')"><span class="ni-ico">📈</span>Informes</button><button class="ni" onclick="go(\'cons\')"><span class="ni-ico">👥</span>Consolidado</button><div class="sb-sec">Gestión</div><button class="ni" onclick="go(\'todos\')"><span class="ni-ico">📁</span>Todos los registros</button><button class="ni" onclick="go(\'nemp\')"><span class="ni-ico">➕</span>Nuevo empleado</button><button class="ni" onclick="go(\'emp\')"><span class="ni-ico">🪪</span>Ver empleados</button><button class="ni" onclick="go(\'tar\')"><span class="ni-ico">💰</span>Tarifas</button>';
   } else if(S.rol==='n'){
@@ -1478,6 +1570,8 @@ function go(pg){
   if(pg==='dc') carDC();
   if(pg==='da') carDA();
   if(pg==='mis-reg') carMR();
+  if(pg==='emp') filtEmp();
+  if(pg==='tar') filtTar();
   if(pg==='todos') carTodos();
   if(pg==='cons') carCons();
   if(pg==='emp') filtEmp();
@@ -2112,6 +2206,9 @@ function calcNom(){
   document.getElementById('nom-a').textContent=cop(totA);
   document.getElementById('nom-tot').textContent=cop(totT);
   document.getElementById('nom-res').style.display='block';
+  // Expandir detalle automáticamente después de calcular
+  var dw=document.getElementById('nom-det-wrap');var di=document.getElementById('nom-det-ico');
+  if(dw){dw.style.display='block';if(di)di.textContent='▲ contraer';}
 
   // Tabla resumen
   document.getElementById('nom-tb').innerHTML=rows.length?rows.map(function(r){
@@ -2252,8 +2349,52 @@ function elimR(){
 // ══════════════════════════════════════════
 // EMPLEADOS Y TARIFAS
 // ══════════════════════════════════════════
-function filtEmp(){var q=(document.getElementById('eq')&&document.getElementById('eq').value||'').toLowerCase();var tb=document.getElementById('emp-tb');if(!tb)return;var d=EMP.filter(function(e){return e.n.toLowerCase().includes(q)||e.c.includes(q);});tb.innerHTML=d.map(function(e){return'<tr><td>'+e.c+'</td><td>'+e.n+'</td></tr>';}).join('')||'<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--g3)">Sin resultados</td></tr>';}
-function filtTar(){var q=(document.getElementById('tq')&&document.getElementById('tq').value||'').toLowerCase();var tb=document.getElementById('tar-tb');if(!tb)return;var d=TAR.filter(function(t){return t.d.toLowerCase().includes(q)||t.id.toLowerCase().includes(q);});tb.innerHTML=d.map(function(t){return'<tr><td><code style="font-size:10px;color:var(--g3)">'+t.id+'</code></td><td>'+t.d+'</td><td>'+t.u+'</td><td><strong>'+cop(t.p)+'</strong></td><td>'+cop(t.c)+'</td></tr>';}).join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--g3)">Sin resultados</td></tr>';}
+function filtEmp(){
+  var q=(document.getElementById('eq')&&document.getElementById('eq').value||'').toLowerCase();
+  var sede=document.getElementById('eq-sede')&&document.getElementById('eq-sede').value||'';
+  var tb=document.getElementById('emp-tb');if(!tb)return;
+  var d=EMP.filter(function(e){
+    var matchQ=!q||e.n.toLowerCase().includes(q)||e.c.includes(q);
+    var matchS=!sede||e.sede===sede;
+    return matchQ&&matchS;
+  });
+  var cnt=document.getElementById('eq-count');
+  if(cnt) cnt.textContent=d.length+' empleado(s)';
+  var sdBadge=function(s){
+    if(!s) return '—';
+    var bg=s==='NORTE'?'var(--as)':'var(--vs)';
+    var cl=s==='NORTE'?'var(--a)':'var(--v)';
+    return '<span style="font-size:10px;padding:1px 7px;border-radius:99px;background:'+bg+';color:'+cl+'">'+s+'</span>';
+  };
+  tb.innerHTML=d.map(function(e){return'<tr><td>'+e.c+'</td><td><strong>'+e.n+'</strong></td><td>'+sdBadge(e.sede)+'</td></tr>';}).join('')||'<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--g3)">Sin resultados</td></tr>';
+}
+function filtTar(){
+  var q=(document.getElementById('tq')&&document.getElementById('tq').value||'').toLowerCase();
+  var sede=document.getElementById('tq-sede')&&document.getElementById('tq-sede').value||'';
+  var tb=document.getElementById('tar-tb');if(!tb)return;
+  var d=TAR.filter(function(t){
+    var matchQ=!q||t.d.toLowerCase().includes(q)||t.id.toLowerCase().includes(q)||t.u.toLowerCase().includes(q);
+    var matchS=!sede||t.sede===sede;
+    return matchQ&&matchS;
+  });
+  var cnt=document.getElementById('tq-count');
+  if(cnt) cnt.textContent=d.length+' tarifa(s)';
+  var sdBadge=function(s){
+    if(!s) return '—';
+    var bg=s==='NORTE'?'var(--as)':'var(--vs)';
+    var cl=s==='NORTE'?'var(--a)':'var(--v)';
+    return '<span style="font-size:10px;padding:1px 7px;border-radius:99px;background:'+bg+';color:'+cl+'">'+s+'</span>';
+  };
+  tb.innerHTML=d.map(function(t){
+    return'<tr>'
+      +'<td><code style="font-size:10px;color:var(--g3)">'+t.id+'</code></td>'
+      +'<td>'+t.d+'</td><td>'+t.u+'</td>'
+      +'<td><strong>'+cop(t.p)+'</strong></td>'
+      +'<td>'+cop(t.c)+'</td>'
+      +'<td>'+sdBadge(t.sede)+'</td>'
+      +'</tr>';
+  }).join('')||'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--g3)">Sin resultados</td></tr>';
+}
 
 // ══════════════════════════════════════════
 // UTILIDADES
@@ -2480,9 +2621,221 @@ function calcVigDesdeRegs(){
 }
 
 
+function swNom(s,btn){
+  ['liq','ico'].forEach(function(x){var el=document.getElementById('nom-'+x);if(el)el.style.display=x===s?'block':'none';});
+  document.querySelectorAll('#p-nom .tab').forEach(function(b){b.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+}
+
 function cop(n){return'$'+Math.round(n||0).toLocaleString('es-CO');}
+
+// Contraer/expandir sección
+function icoTog(k){ togSection('ico-det-'+k,'ico-ico-'+k); }
+function togSection(wrapId, icoId){
+  var wrap=document.getElementById(wrapId);
+  var ico=document.getElementById(icoId);
+  if(!wrap) return;
+  var open=wrap.style.display!=='none';
+  wrap.style.display=open?'none':'block';
+  if(ico) ico.textContent=open?'▼ expandir':'▲ contraer';
+}
 function getNov(c){return NOVNOM[c]||c||'—';}
 function detectAlts(regs){var by={};regs.forEach(function(r){if(r.tipo!=='labor')return;var k=r.ced+'|'+r.coord+'|'+r.dia+'|'+r.sem;if(!by[k])by[k]={emp:r.emp,coord:r.coord,dia:r.dia,pago:0};by[k].pago+=r.pago;});return Object.values(by).filter(function(x){return x.pago>0&&x.pago<UMBRAL;});}
+
+// ══════════════════════════════════════════
+// INFORME POR COORDINADOR
+// ══════════════════════════════════════════
+function calcIco(){
+  var qId=document.getElementById('ico-q').value;
+  var filtSede=document.getElementById('ico-sede').value;
+  var qna=QNAS.find(function(q){return q.id===qId;});
+  if(!qna){alert('Selecciona una quincena');return;}
+
+  var semIds=qna.sems.map(function(s){return s.s.padStart(2,'0');});
+
+  // Cargar registros si no están en memoria
+  var enMem=REGS.filter(function(r){return semIds.includes(r.sem);});
+  if(!enMem.length){
+    var btn=document.querySelector('#nom-ico .btn.bn');
+    if(btn){btn.textContent='⏳ Cargando...';btn.disabled=true;}
+    fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'getRegistros',sem:''})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(btn){btn.textContent='Generar informe';btn.disabled=false;}
+      if(!data.ok){alert('Error: '+(data.error||''));return;}
+      REGS.length=0;
+      data.registros.forEach(function(r){REGS.push(r);});
+      calcIco();
+    }).catch(function(){if(btn){btn.textContent='Generar informe';btn.disabled=false;}});
+    return;
+  }
+
+  var regsQna=REGS.filter(function(r){
+    return semIds.includes(r.sem) && (!filtSede||r.sede===filtSede);
+  });
+
+  // Agrupar por coordinador
+  var byCoord={};
+  regsQna.forEach(function(r){
+    if(!byCoord[r.coord]) byCoord[r.coord]={
+      coord:r.coord, adm:r.adm,
+      labores:{}, vigilancia:{}
+    };
+    var bc=byCoord[r.coord];
+
+    if(r.esVig){
+      // Vigilancia
+      if(!bc.vigilancia[r.ced]) bc.vigilancia[r.ced]={emp:r.emp,ced:r.ced,hd:0,hn:0,turnos:[]};
+      bc.vigilancia[r.ced].hd+=(r.vigHd||0);
+      bc.vigilancia[r.ced].hn+=(r.vigHn||0);
+      bc.vigilancia[r.ced].turnos.push(r);
+    } else {
+      // Labores normales
+      if(!bc.labores[r.ced]) bc.labores[r.ced]={emp:r.emp,ced:r.ced,pago:0,tareas:[]};
+      bc.labores[r.ced].pago+=r.pago;
+      bc.labores[r.ced].tareas.push(r);
+    }
+  });
+
+  var T=getVT();
+  var AUX_QNA=Math.round(249095/2);
+  var H_AUX=7.33;
+
+  // Calcular vigilancia por empleado dentro de cada coordinador
+  Object.values(byCoord).forEach(function(bc){
+    Object.values(bc.vigilancia).forEach(function(emp){
+      // Usar misma lógica de liquidarVig pero simplificada
+      var ordDisp=96;
+      var salOrd=0,salFest=0,auxAlim=0;
+      var totalH=0;
+      emp.turnos.forEach(function(t){
+        var fest=t.domFest||false;
+        var hd=t.vigHd||0, hn=t.vigHn||0;
+        if(hn>0){var hdn=Math.min(1,hn);hd+=hdn;hn-=hdn;}
+        var tot=hd+hn; totalH+=tot;
+        var ord=Math.min(tot,ordDisp); var ext=tot-ord; ordDisp-=ord;
+        var pD=tot>0?hd/tot:0, pN=tot>0?hn/tot:0;
+        if(!fest){
+          salOrd+=Math.round((ord*pD)*T.t1+(ord*pN)*T.t3);
+          auxAlim+=Math.round((ext*pD)*T.t2+(ext*pN)*T.t4);
+        } else {
+          salFest+=Math.round((ord*pD)*T.t5+(ord*pN)*T.t7);
+          auxAlim+=Math.round((ext*pD)*T.t6+(ext*pN)*T.t8);
+        }
+      });
+      var diasAux=Math.min(15,Math.ceil(totalH/H_AUX));
+      var auxT=Math.round((diasAux/15)*AUX_QNA);
+      emp.totalH=totalH; emp.salOrd=salOrd; emp.salFest=salFest;
+      emp.auxAlim=auxAlim; emp.auxT=auxT;
+      emp.total=salOrd+salFest+auxAlim+auxT;
+    });
+  });
+
+  // Renderizar
+  var totLab=0,totVig=0,nCoords=0,nEmpVig=0;
+  var rows=[];
+  Object.values(byCoord).forEach(function(bc){
+    var tLab=Object.values(bc.labores).reduce(function(s,e){return s+e.pago;},0);
+    var tVig=Object.values(bc.vigilancia).reduce(function(s,e){return s+e.total;},0);
+    var nLab=Object.keys(bc.labores).length;
+    var nVig=Object.keys(bc.vigilancia).length;
+    totLab+=tLab; totVig+=tVig; nCoords++;
+    nEmpVig+=nVig;
+    rows.push({coord:bc.coord,adm:bc.adm,labores:bc.labores,vigilancia:bc.vigilancia,
+      nLab:nLab,nVig:nVig,tLab:tLab,tVig:tVig,tot:tLab+tVig});
+  });
+  rows.sort(function(a,b){return b.tot-a.tot;});
+
+  // Stats
+  document.getElementById('ico-sg').style.display='grid';
+  document.getElementById('ico-nc').textContent=nCoords;
+  document.getElementById('ico-ne').textContent=nEmpVig;
+  document.getElementById('ico-tl').textContent=cop(totLab);
+  document.getElementById('ico-tv').textContent=cop(totVig);
+  document.getElementById('ico-res').style.display='block';
+  document.getElementById('ico-qna-lbl').textContent='— '+qna.n;
+
+  // Tabla resumen
+  document.getElementById('ico-tb').innerHTML=rows.map(function(r){
+    return'<tr>'
+      +'<td><strong>'+r.coord+'</strong></td>'
+      +'<td style="font-size:11px">'+r.adm+'</td>'
+      +'<td style="text-align:center">'+r.nLab+'</td>'
+      +'<td><strong style="color:var(--v)">'+cop(r.tLab)+'</strong></td>'
+      +'<td style="text-align:center">'+r.nVig+'</td>'
+      +'<td><strong style="color:var(--f)">'+cop(r.tVig)+'</strong></td>'
+      +'<td style="background:var(--vs)"><strong style="color:var(--v)">'+cop(r.tot)+'</strong></td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('ico-tf').innerHTML=
+    '<tr><td colspan="3"><strong>TOTALES</strong></td>'
+    +'<td><strong>'+cop(totLab)+'</strong></td>'
+    +'<td></td>'
+    +'<td><strong style="color:var(--f)">'+cop(totVig)+'</strong></td>'
+    +'<td style="background:var(--vs)"><strong>'+cop(totLab+totVig)+'</strong></td></tr>';
+
+  // Detalle por coordinador
+  document.getElementById('ico-det').innerHTML=rows.map(function(bc){
+    var labHtml='', vigHtml='';
+
+    // Labores normales
+    if(Object.keys(bc.labores).length){
+      var labRows=Object.values(bc.labores).sort(function(a,b){return b.pago-a.pago;});
+      labHtml='<div style="margin-bottom:8px">'
+        +'<div style="font-size:11px;font-weight:600;color:var(--v);margin-bottom:4px">📋 Labores normales</div>'
+        +'<div class="tw"><table><thead><tr><th>Empleado</th><th>Cédula</th><th>Tareas</th><th>Total devengo</th></tr></thead><tbody>'
+        +labRows.map(function(e){
+          var detalleT=e.tareas.reduce(function(by,t){
+            var k=t.lab||'—';
+            if(!by[k])by[k]={lab:k,pago:0,cant:0};
+            by[k].pago+=t.pago; by[k].cant+=t.cant||0;
+            return by;
+          },{});
+          var det=Object.values(detalleT).map(function(d){return d.lab+': '+cop(d.pago);}).join(' | ');
+          return'<tr><td><strong>'+e.emp+'</strong><br><span style="font-size:10px;color:var(--g3)">'+det+'</span></td>'
+            +'<td>'+e.ced+'</td><td>'+e.tareas.length+'</td>'
+            +'<td><strong style="color:var(--v)">'+cop(e.pago)+'</strong></td></tr>';
+        }).join('')
+        +'</tbody><tfoot><tr><td colspan="3"><strong>Total labores</strong></td><td><strong>'+cop(bc.tLab)+'</strong></td></tr></tfoot>'
+        +'</table></div></div>';
+    }
+
+    // Vigilancia
+    if(Object.keys(bc.vigilancia).length){
+      var vigRows=Object.values(bc.vigilancia).sort(function(a,b){return b.total-a.total;});
+      vigHtml='<div>'
+        +'<div style="font-size:11px;font-weight:600;color:var(--f);margin-bottom:4px">🔧 Vigilancia maquinaria</div>'
+        +'<div class="tw"><table><thead><tr>'
+        +'<th>Empleado</th><th>Cédula</th><th>Total horas</th>'
+        +'<th>Sal. ordinario</th><th>Sal. festivo</th><th>Aux. alim.</th><th>Aux. transp.</th>'
+        +'<th style="color:var(--f)">Total</th>'
+        +'</tr></thead><tbody>'
+        +vigRows.map(function(e){
+          return'<tr><td><strong>'+e.emp+'</strong></td><td>'+e.ced+'</td>'
+            +'<td>'+Math.round((e.totalH||0)*10)/10+'h</td>'
+            +'<td>'+cop(e.salOrd)+'</td>'
+            +'<td>'+(e.salFest>0?'<span style="color:var(--r)">'+cop(e.salFest)+'</span>':'—')+'</td>'
+            +'<td>'+(e.auxAlim>0?'<span style="color:var(--n)">'+cop(e.auxAlim)+'</span>':'—')+'</td>'
+            +'<td>'+cop(e.auxT)+'</td>'
+            +'<td style="background:var(--fs)"><strong style="color:var(--f)">'+cop(e.total)+'</strong></td>'
+            +'</tr>';
+        }).join('')
+        +'</tbody><tfoot><tr><td colspan="7"><strong>Total vigilancia</strong></td><td style="background:var(--fs)"><strong style="color:var(--f)">'+cop(bc.tVig)+'</strong></td></tr></tfoot>'
+        +'</table></div></div>';
+    }
+
+      +'<div class="ct" style="cursor:pointer;user-select:none" data-coord-key="'+bc.coord.replace(/[^a-z0-9]/gi,'_')+'" onclick="icoTog(this.getAttribute(' + "'data-coord-key'))" + '">'
+      +'👤 '+bc.coord+' <span style="font-size:11px;color:var(--g3)">'+bc.adm+'</span>'
+      +' — <span style="color:var(--v)">Labores: '+cop(bc.tLab)+'</span>'
+      +(bc.tVig>0?' · <span style="color:var(--f)">Vigilancia: '+cop(bc.tVig)+'</span>':'')
+      +' <strong>| Total: '+cop(bc.tot)+'</strong>'
+      +' <span id="ico-ico-'+bc.coord.replace(/[^a-z0-9]/gi,'_')+'" style="float:right;font-size:12px;color:var(--g3)">▼</span>'
+      +'</div>'
+      +'<div id="ico-det-'+bc.coord.replace(/[^a-z0-9]/gi,'_')+'" style="display:none;padding:8px 0">'
+      +labHtml+vigHtml
+      +'</div></div>';
+  }).join('');
+}
 
 // ── ORDENAR TABLAS ──
 var sortState={};
