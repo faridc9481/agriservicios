@@ -997,18 +997,15 @@ function getRangoSem(sem){
   return lunes.getDate()+' '+mesL+' – '+domingo.getDate()+' '+mesD+' '+domingo.getFullYear();
 }
 
-const USUARIOS={
-  c:{'ARLEX TREJOS':{p:'1234',adm:'JOSE QUICENO'},'CARLOS PRIMERO':{p:'1234',adm:'JORGE CASTILLO'},'DIDIER VELEZ':{p:'1234',adm:'JULIAN BONILLA'},'DIEGO CASTRO':{p:'1234',adm:'JUAN MANUEL ESCOBAR'},'ELIZABETH MARTINEZ':{p:'1234',adm:'EDILSON ORJUELA'},'GERMAN ALADINO':{p:'1234',adm:'FABIAN RAMIREZ'},'GERMAN CASTAÑEDA':{p:'1234',adm:'LUIS HERRAN'},'JAMES DAVID PALACIO':{p:'1234',adm:'VICTOR RINCON'},'JOHAN ANDRES RUIZ':{p:'1234',adm:'BRIAN PEREA'},'JOSE ALEXANDER NOGUERA - OSCAR':{p:'1234',adm:'OSCAR DAVILA'},'JOSE ALEXANDER NOGUERA-VICTOR':{p:'1234',adm:'VICTOR ORTEGA'},'JUAN CAMILO OLIVEROS':{p:'1234',adm:'SEBASTIAN RESTREPO'},'JULIAN GALEANO-ANDRES':{p:'1234',adm:'OSCAR DAVILA'},'JULIAN GALEANO-OSCAR':{p:'1234',adm:'VICTOR ORTEGA'},'LILIANA CÉSPEDES':{p:'1234',adm:''},'NELSON DUQUE':{p:'1234',adm:'RAFAEL ALVARADO'},'NELSON DUQUE - ANDRES':{p:'1234',adm:'ANDRES SANDOVAL'},'NELSON DUQUE - OSCAR':{p:'1234',adm:'OSCAR DAVILA'},'VIGILANCIA PLANTA':{p:'1234',adm:'ALEXANDER TOBON'},'WINSY ANACONA':{p:'1234',adm:'ANGELA MONSALVE'},'YEISON PULGARIN':{p:'1234',adm:'ALEXANDER DUQUE'},'YEISON RAMIREZ':{p:'1234',adm:'JAIRO CARDENAS'},'YEISON RAMIREZ - AGRICOLA':{p:'1234',adm:'AGRICOLA'},'YEISON RAMIREZ - COMPOST':{p:'1234',adm:'LAURA VELEZ'},'YEISON RAMIREZ - FERTIRIO':{p:'1234',adm:'DIEGO BURBANO'},'JHON WILLIAM BERNAL':{p:'1234',adm:'JHON BERNAL'},'BODEGA':{p:'1234',adm:'JHON BERNAL'}},
-  a:{'GERENTE':{p:'admin2025'},'SUPERVISOR 1':{p:'admin2025'},'SUPERVISOR 2':{p:'admin2025'},'SUPERVISOR 3':{p:'admin2025'},'JEFE':{p:'admin2025'},'ADMIN':{p:'admin2025'}},
-  n:{'NOMINA':{p:'nom2025'}},
-  f:{'ADMIN':{p:'admin2025'},'MARTHA':{p:'fac2025'}}
-};
 
-const EMP=[{c:'2627467',n:'JORGE ALBEIRO GUTIERREZ VILLA'},{c:'2627511',n:'JESUS MARIA GUEVARA CARVAJAL'},{c:'2627540',n:'CARLOS ALBERTO GUTIERREZ VILLA'},{c:'2699771',n:'JOSE ALIRIO LEGUIZAMO PAREJA'},{c:'4423587',n:'JULIO CESAR ESTRADA GOMEZ'},{c:'6117149',n:'LUIS CARLOS MONCADA'},{c:'6138443',n:'HERNAN MARINO GIL PEDROZA'},{c:'6138614',n:'LUIS FERNANDO HENAO MOSQUERA'},{c:'6197160',n:'GERARDO VELEZ ESCOBAR'},{c:'6197354',n:'JOSE WILSON RODAS GUTIERREZ'},{c:'6198133',n:'JOSE ONOFRE BECERRA SANCHEZ'},{c:'6198236',n:'GUSTAVO CASTILLO MORENO'},{c:'6199677',n:'OSCAR ALBERTO GONZALEZ BEJARANO'},{c:'16540432',n:'CARLOS HUMBERTO PRIMERO RUIZ'},{c:'16540802',n:'GIOVANNY MUÑOZ'},{c:'16545236',n:'JAMES OSORIO MURGUEITIO'},{c:'16548285',n:'GUSTAVO HERNANDEZ GARCIA'},{c:'16549914',n:'ELMER COLORADO TABARES'},{c:'16550783',n:'BORIS GARCIA GARCIA'},{c:'94225287',n:'GUSTAVO GOMEZ OSORIO'},{c:'94226380',n:'HECTOR MARINO ASPRILLA CAICEDO'},{c:'94227254',n:'LUIS ALBEIRO GIL GARCIA'},{c:'94227528',n:'SANDRO ADRIANO CAMPO ESCOBAR'},{c:'94228244',n:'OSCIEL MARTINEZ CARDONA'},{c:'94228302',n:'DIEGO FERNANDO CASTRO'},{c:'94228663',n:'JULIO CESAR SALAZAR RUIZ'},{c:'94252749',n:'DIDIER VELEZ CEBALLOS'}];
+// USUARIOS: solo estructura vacía — login siempre verifica contra Sheets
+// El fallback local solo existe si Sheets no responde
+const USUARIOS={c:{},a:{},n:{},f:{}};
 
-const TAR=[{id:'CM1060500',d:'CONTROL DE MALEZAS CON GUADAÑA',u:'HA',p:230378,c:533094},{id:'CM1061000',d:'ARRANQUE MANUAL COBERTURA MENOR AL 30%',u:'HA',p:64465,c:136720},{id:'CM1061001',d:'CONTROL MANUAL COBERTURA ENTRE 30 Y 60%',u:'HA',p:128931,c:273441},{id:'CM1061003',d:'CONTROL MANUAL MALEZAS SUERTES HA',u:'HA',p:80267,c:410161},{id:'CM1062005',d:'CONTROL QUIMICO APLICACION MANO OBRA',u:'HA',p:32478,c:113933},{id:'DR1084806',d:'DESCABECE DE SURCOS',u:'C/U',p:811,c:1709},{id:'DR1084807',d:'DESCABECE SURCOS SUELOS H2-H5',u:'C/U',p:1078,c:2278},{id:'DR1084809',d:'APOYO LABORES DRENAJE DIA',u:'DIA',p:68091,c:145071},{id:'LA1800217',d:'SERVICIO MANTENIMIENTO AREAS LOCATIVA',u:'DIA',p:68091,c:136720},{id:'LA1800218',d:'CHEQUEO ACTIVOS AGRICOLAS',u:'DIA',p:68091,c:177342},{id:'LA1800219',d:'SERVICIO LIMPIEZA PLANTA FERTIRIO',u:'DIA',p:68091,c:136720},{id:'LA1800220',d:'SERVICIO MONITOREO LABORES CAMPO',u:'DIA',p:81920,c:202212},{id:'LA1800248',d:'SIEMBRA DE CAUPI',u:'HA',p:169781,c:373856},{id:'LA1800249',d:'FERTILIZACION MANUAL ORGANICA',u:'HA',p:41411,c:96441},{id:'LA1800286',d:'SERVICIO DE GUADANA MANUAL',u:'HA',p:230378,c:524972},{id:'LV1053001',d:'DESPAJE MANUAL CANA SIN QUEMAR',u:'HA',p:324780,c:546882},{id:'LV1058000',d:'FERTILIZACION MANUAL',u:'HA',p:64465,c:136720},{id:'LV1059000',d:'REABONAMIENTO',u:'HA',p:20724,c:43952},{id:'LV1061182',d:'MOTOBOMBERO EQUIPO RIEGO Y/O DRENAJE',u:'H',p:0,c:18133},{id:'LV1061183',d:'VIGILANCIA MAQUINARIA',u:'H',p:0,c:18133,esVigilancia:true},{id:'RG1071001',d:'RIEGO GRAVEDAD BOCATOMA HA',u:'HA',p:44452,c:101623},{id:'RG1071102',d:'RIEGO GRAVEDAD MOTOBOMBA (LAB 711) HA',u:'HA',p:44452,c:100847},{id:'RG1074102',d:'MTTO MANUAL CANALES HM',u:'HM',p:45585,c:100344},{id:'RG1079996',d:'APOYO LABORES RIEGO DIA',u:'DIA',p:68091,c:145071},{id:'SB1032032',d:'SIEMBRA CANA 1.65-1.75 BAND 10 MT',u:'HA',p:810869,c:1829477},{id:'SB1037000',d:'FERTILIZACION FONDO SURCO MANUAL',u:'HA',p:32478,c:68880},{id:'LA1800300',d:'OPERARIO TRACTOR OFICIOS VARIOS',u:'H',p:8192,c:17373}];
-
-const QNAS=[{id:'Q7-2026',n:'01 QNA ABRIL 2026 (pago 30-ABR)',sems:[{s:'14',d:6},{s:'15',d:7},{s:'16',d:3}]},{id:'Q8-2026',n:'02 QNA ABRIL 2026 (pago 15-MAY)',sems:[{s:'16',d:4},{s:'17',d:7},{s:'18',d:4}]},{id:'Q9-2026',n:'01 QNA MAYO 2026 (pago 30-MAY)',sems:[{s:'18',d:3},{s:'19',d:7},{s:'20',d:5}]},{id:'Q1-2026',n:'01 QNA ENERO 2026 (pago 30-ENE)',sems:[{s:'01',d:4},{s:'02',d:7},{s:'03',d:4}]},{id:'Q2-2026',n:'02 QNA ENERO 2026 (pago 15-FEB)',sems:[{s:'03',d:3},{s:'04',d:7},{s:'05',d:5}]},{id:'Q3-2026',n:'01 QNA FEBRERO 2026',sems:[{s:'05',d:2},{s:'06',d:7},{s:'07',d:7}]},{id:'Q4-2026',n:'02 QNA FEBRERO 2026',sems:[{s:'08',d:7},{s:'09',d:6}]},{id:'Q5-2026',n:'01 QNA MARZO 2026',sems:[{s:'09',d:1},{s:'10',d:7},{s:'11',d:7}]},{id:'Q6-2026',n:'02 QNA MARZO 2026',sems:[{s:'12',d:7},{s:'13',d:7},{s:'14',d:1}]}];
+// EMP, TAR, QNAS arrancan vacíos — se llenan desde Sheets al hacer login
+let EMP=[];
+let TAR=[];
+let QNAS=[];
 
 const NOVNOM={'MB':'Motobomba','1':'Incapacidad E.G.','2':'Incapacidad A.T.','3':'Cita médica general','4':'Calamidad','5':'Día familia','6':'Permiso','7':'Permiso no remunerado','8':'Nocturno','9':'Lic. paternidad','10':'Lic. maternidad','11':'Lic. luto','12':'Suspendido','13':'Vacaciones','14':'Reinducción','15':'Exámenes médicos','16':'Varada moto','17':'Falta sin causa','18':'Ingreso','19':'Retiro','20':'Capacitación','21':'Día de reposo','24':'Cita médica especialista'};
 
@@ -1083,10 +1080,6 @@ function login(){
   if(!u){showErr('Selecciona un usuario');return;}
   if(!p){showErr('Ingresa tu contraseña');return;}
 
-  // Primero verificar localmente para UX rápida, luego confirmar con Sheets
-  var pool=USUARIOS[S.ltab];
-  if(pool&&pool[u]&&pool[u].p!==p){showErr('Contraseña incorrecta');return;}
-
   document.getElementById('lbtn').textContent='Verificando...';
   document.getElementById('lbtn').disabled=true;
 
@@ -1105,16 +1098,10 @@ function login(){
     completarLogin();
   })
   .catch(function(){
-    // Si falla la conexión, usar verificación local como fallback
+    // Sin conexión a Sheets → no se puede verificar identidad
     document.getElementById('lbtn').textContent='Ingresar';
     document.getElementById('lbtn').disabled=false;
-    var pool2=USUARIOS[S.ltab];
-    if(!pool2||!pool2[u]||pool2[u].p!==p){showErr('Error de conexión y credenciales incorrectas');return;}
-    document.getElementById('lerr').style.display='none';
-    S.u=u; S.rol=S.ltab;
-    S.adm=S.ltab==='c'?(pool2[u].adm||''):'';
-    S.sede=pool2[u]?pool2[u].sede||'TODAS':'TODAS';
-    completarLogin();
+    showErr('⚠ Sin conexión con el servidor. Verifica tu internet e intenta de nuevo.');
   });
 }
 
