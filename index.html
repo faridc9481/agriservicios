@@ -1095,7 +1095,7 @@ tfoot td{background:var(--gf);font-weight:700}
 // ══════════════════════════════════════════
 // CONFIGURACIÓN
 // ══════════════════════════════════════════
-const APPS_URL='https://script.google.com/macros/s/AKfycbzujTt0YiQdswmpruNdVhOmuXh4V4dJd5lxWciFOy0y0h8qKf4D39W7GjXfx_hUfrD-bA/exec';
+const APPS_URL='https://script.google.com/macros/s/AKfycbxoS1CBnIRcK-dpktJsxbtmDTfKQqnVyv_tfsqG8lzJlkuqXb7hE2QuOmKbFYq5bwSwHg/exec';
 const UMBRAL=68091;
 const NOV_AUX=['MB','5','14','24'];
 const ADMINS=['JOSE QUICENO','JHON BERNAL','JORGE CASTILLO','JULIAN BONILLA','JUAN MANUEL ESCOBAR','EDILSON ORJUELA','FABIAN RAMIREZ','LUIS HERRAN','VICTOR RINCON','BRIAN PEREA','OSCAR DAVILA','VICTOR ORTEGA','SEBASTIAN RESTREPO','ANDRES SANDOVAL','RAFAEL ALVARADO','ALEXANDER TOBON','ANGELA MONSALVE','ALEXANDER DUQUE','JAIRO CARDENAS','AGRICOLA','LAURA VELEZ','DIEGO BURBANO'];
@@ -1218,7 +1218,12 @@ function swLT(t){
 
   // Cargar usuarios desde Sheets
   var rolMap={c:'coord',a:'admin',n:'nomina',f:'factura'};
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'getUsuarios',rol:rolMap[t]})})
+  fetch(APPS_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain'}, // Apps Script requiere text/plain para evitar preflight CORS
+    body:JSON.stringify({accion:'getUsuarios',rol:rolMap[t]}),
+    redirect:'follow'
+  })
   .then(function(r){return r.json();})
   .then(function(data){
     console.log('getUsuarios respuesta:', JSON.stringify(data));
@@ -1273,7 +1278,7 @@ function login(){
   }
 
   // Verificar con Sheets
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'login',usuario:u,pass:p})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'login',usuario:u,pass:p})})
   .then(function(r){return r.json();})
   .then(function(data){
     document.getElementById('lbtn').textContent='Ingresar';
@@ -1372,7 +1377,7 @@ function guardarNuevoEmp(){
 
   msg.style.display='block';msg.style.background='var(--vs)';msg.style.color='var(--v)';msg.textContent='Guardando...';
 
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'nuevoEmpleado',ced:ced,nom:nom,sede:sede})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'nuevoEmpleado',ced:ced,nom:nom,sede:sede})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(!data.ok) throw new Error(data.error||'Error al guardar');
@@ -1647,7 +1652,7 @@ function cargarDatosSheets(){
   loader.textContent='⏳ Cargando datos de Sheets...';
   document.body.appendChild(loader);
 
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'getDatos',sede:S.sede||''})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'getDatos',sede:S.sede||''})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(!data.ok) throw new Error(data.error);
@@ -1743,22 +1748,28 @@ function cargarDatosSheets(){
 // ── CARGAR REGISTROS DESDE SHEETS ──
 function cargarRegistrosSheets(sem, coord){
   var filtro={accion:'getRegistros', sem:sem||''};
-  if(S.rol==='c') filtro.coord=S.u; // coordinador solo ve los suyos
+  if(S.rol==='c') filtro.coord=S.u;
   else if(coord) filtro.coord=coord;
 
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify(filtro)})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(filtro)})
   .then(function(r){return r.json();})
   .then(function(data){
     if(!data.ok){console.warn('getRegistros error:',data.error);return;}
-    // Reemplazar REGS completamente con lo que viene de Sheets
+    // Verificar que registros existe y es array
+    if(!data.registros||!Array.isArray(data.registros)){
+      console.warn('getRegistros: respuesta sin array registros',data);
+      return;
+    }
     REGS.length=0;
     data.registros.forEach(function(r){REGS.push(r);});
     console.log('Registros cargados desde Sheets:',REGS.length);
-    // Refrescar vistas
     if(S.rol==='c'){carDC();carMR();}
     else{carDA();}
   })
-  .catch(function(err){console.error('Error cargando registros:',err);});
+  .catch(function(err){
+    console.error('Error cargando registros:',err);
+    // No bloquear la app por error de registros
+  });
 }
 function logout(){S.u=null;document.getElementById('app').style.display='none';document.getElementById('lscreen').style.display='flex';document.getElementById('lpass').value='';document.getElementById('luser').value='';}
 
@@ -1983,7 +1994,7 @@ async function enviarLote(){
   document.getElementById('btn-enviar').textContent='Enviando...';
   document.getElementById('btn-enviar').disabled=true;
   try{
-    await fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'guardar',registros:LOTE})});
+    await fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'guardar',registros:LOTE})});
   }catch(e){}
   LOTE.forEach(function(r){REGS.push(r);});
   var n=LOTE.length;
@@ -2547,7 +2558,7 @@ function calcNom(){
     var btn=document.getElementById('nom-btn');
     if(btn){btn.textContent='⏳ Cargando registros...';btn.disabled=true;}
     // Cargar todos los registros sin filtro de semana para tener todo
-    fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'getRegistros',sem:''})})
+    fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'getRegistros',sem:''})})
     .then(function(r){return r.json();})
     .then(function(data){
       if(btn){btn.textContent='Calcular nómina';btn.disabled=false;}
@@ -2767,7 +2778,7 @@ function guardarFactura(){
   };
 
   showFacMsg('⏳ Guardando...','v');
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'guardarFactura',factura:fac})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'guardarFactura',factura:fac})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(!data.ok) throw new Error(data.error||'Error');
@@ -2782,7 +2793,7 @@ function guardarFactura(){
 }
 
 function carFacturas(){
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'getFacturas'})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'getFacturas'})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(data.ok&&data.facturas){
@@ -2824,7 +2835,7 @@ function renderFacturas(){
 function facElim(btn){elimFactura(btn.getAttribute("data-fid"));}
 function elimFactura(id){
   if(!confirm('¿Eliminar esta factura?')) return;
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'eliminarFactura',id:id})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'eliminarFactura',id:id})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(!data.ok){showSync('⚠ Error al eliminar: '+(data.error||''),'r');return;}
@@ -2935,7 +2946,7 @@ function guardarDetallado(){
   var msg=document.getElementById('det-msg');
   msg.style.display='block';msg.style.background='var(--vs)';msg.style.color='var(--v)';msg.textContent='⏳ Guardando...';
 
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'guardarDetallado',detalles:detalles})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'guardarDetallado',detalles:detalles})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(!data.ok) throw new Error(data.error||'Error');
@@ -2953,7 +2964,7 @@ function guardarDetallado(){
 }
 
 function carDetalladoFac(facId){
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'getDetallado',idFac:facId})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'getDetallado',idFac:facId})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(data.ok&&data.detalles){
@@ -3111,7 +3122,7 @@ function saveME(){
   var btn=document.getElementById('me-save-btn');
   if(btn){btn.textContent='⏳ Guardando...';btn.disabled=true;}
 
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'editarReg',
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'editarReg',
     fila:REGS[idx].fila, id:REGS[idx].id, coord:REGS[idx].coord,
     adm:REGS[idx].adm, sem:nuevo.sem, ced:REGS[idx].ced,
     emp:REGS[idx].emp, dia:nuevo.dia, tipo:REGS[idx].tipo,
@@ -3156,7 +3167,7 @@ function elimR(){
   var btn=document.getElementById('me-del-btn');
   if(btn){btn.textContent='⏳ Eliminando...';btn.disabled=true;}
 
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'eliminarReg',fila:reg.fila})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'eliminarReg',fila:reg.fila})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(btn){btn.textContent='🗑️ Eliminar';btn.disabled=false;}
@@ -3502,7 +3513,7 @@ function guardarNota(){
     nov:'',alim:0,obsTarea:txt,esVig:false,vigHd:0,vigHn:0,domFest:false
   };
 
-  fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'guardar',registros:[nota]})})
+  fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'guardar',registros:[nota]})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(!data.ok) throw new Error(data.error||'Error');
@@ -3530,7 +3541,7 @@ function carNotas(){
   var notas=REGS.filter(function(r){return r.tipo==='nota'&&r.coord===S.u;});
   if(!notas.length){
     // Intentar cargar desde Sheets
-    fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'getRegistros',sem:'',tipo:'nota',coord:S.u})})
+    fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'getRegistros',sem:'',tipo:'nota',coord:S.u})})
     .then(function(r){return r.json();})
     .then(function(data){
       if(data.ok&&data.registros){
@@ -3603,7 +3614,7 @@ function calcIco(){
   if(!enMem.length){
     var btn=document.querySelector('#nom-ico .btn.bn');
     if(btn){btn.textContent='⏳ Cargando...';btn.disabled=true;}
-    fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'getRegistros',sem:''})})
+    fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'getRegistros',sem:''})})
     .then(function(r){return r.json();})
     .then(function(data){
       if(btn){btn.textContent='Generar informe';btn.disabled=false;}
@@ -3793,7 +3804,7 @@ function calcBR(){
   // Cargar desde Sheets si no hay datos
   var enMem=REGS.filter(function(r){return r.sem===sem;});
   if(!enMem.length){
-    fetch(APPS_URL,{method:'POST',body:JSON.stringify({accion:'getRegistros',sem:sem})})
+    fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'getRegistros',sem:sem})})
     .then(function(r){return r.json();})
     .then(function(data){
       if(data.ok){REGS.length=0;data.registros.forEach(function(r){REGS.push(r);});}
