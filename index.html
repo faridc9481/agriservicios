@@ -1095,7 +1095,7 @@ tfoot td{background:var(--gf);font-weight:700}
 // ══════════════════════════════════════════
 // CONFIGURACIÓN
 // ══════════════════════════════════════════
-const APPS_URL='https://script.google.com/macros/s/AKfycbxoS1CBnIRcK-dpktJsxbtmDTfKQqnVyv_tfsqG8lzJlkuqXb7hE2QuOmKbFYq5bwSwHg/exec';
+const APPS_URL='https://script.google.com/macros/s/AKfycbzujTt0YiQdswmpruNdVhOmuXh4V4dJd5lxWciFOy0y0h8qKf4D39W7GjXfx_hUfrD-bA/exec';
 const UMBRAL=68091;
 const NOV_AUX=['MB','5','14','24'];
 const ADMINS=['JOSE QUICENO','JHON BERNAL','JORGE CASTILLO','JULIAN BONILLA','JUAN MANUEL ESCOBAR','EDILSON ORJUELA','FABIAN RAMIREZ','LUIS HERRAN','VICTOR RINCON','BRIAN PEREA','OSCAR DAVILA','VICTOR ORTEGA','SEBASTIAN RESTREPO','ANDRES SANDOVAL','RAFAEL ALVARADO','ALEXANDER TOBON','ANGELA MONSALVE','ALEXANDER DUQUE','JAIRO CARDENAS','AGRICOLA','LAURA VELEZ','DIEGO BURBANO'];
@@ -1189,6 +1189,7 @@ const NOVNOM={'MB':'Motobomba','1':'Incapacidad E.G.','2':'Incapacidad A.T.','3'
 let S={u:null,rol:null,ltab:'c',diaSel:null,tc:0,editId:null,adm:''};
 let REGS=[]; // se carga desde Sheets al hacer login
 let COORDS=[]; // coordinadores desde BD_COORD en Sheets
+let DATOS_LISTOS=false; // true cuando empleados y tarifas ya cargaron de Sheets
 let FACTS=[],MOBS=[];
 
 // ══════════════════════════════════════════
@@ -1351,6 +1352,8 @@ function completarLogin(){
   document.getElementById('rbdg').style.background=cols[rol].replace('var(','').replace(')','');
   document.getElementById('r-coord').value=u;
   document.getElementById('r-admin').value=S.adm||'';
+  // También poblar en el campo de semana label
+  var radm=document.getElementById('r-admin'); if(radm&&!radm.value&&S.adm) radm.value=S.adm;
   buildNav();
   poblarSelsSems();
   cargarDatosSheets();
@@ -1692,6 +1695,15 @@ function cargarDatosSheets(){
     if(data.coordinadores&&data.coordinadores.length){
       COORDS.length=0;
       data.coordinadores.forEach(function(c){COORDS.push(c);});
+      // Actualizar campo admin del coordinador logueado
+      if(S.rol==='c'&&S.u){
+        var miCoord=COORDS.find(function(c){return c.coord.toUpperCase()===S.u.toUpperCase();});
+        if(miCoord){
+          S.adm=miCoord.admin||'';
+          var adminEl=document.getElementById('r-admin');
+          if(adminEl) adminEl.value=S.adm;
+        }
+      }
       // Repoblar todos los selects de coordinador
       ['td-co','ic-co','ie-co','cm-co','nom-co','mb-co'].forEach(function(id){
         var el=document.getElementById(id); if(!el) return;
@@ -1727,6 +1739,14 @@ function cargarDatosSheets(){
       }
     }
 
+    // Re-inicializar registro si está abierto (para refrescar tarifas/empleados por sede)
+    if(S.rol==='c'){
+      // Limpiar y reconstruir el form de registro con los datos correctos de sede
+      S.tc=0;
+      var tw=document.getElementById('tw');
+      if(tw&&tw.children.length===0) {chgTipo();addT();}
+      else {rebuilTarSelects();}
+    }
     // Cargar registros de la semana actual
     cargarRegistrosSheets(''); // cargar todos los registros del coordinador
 
@@ -1771,7 +1791,7 @@ function cargarRegistrosSheets(sem, coord){
     // No bloquear la app por error de registros
   });
 }
-function logout(){S.u=null;document.getElementById('app').style.display='none';document.getElementById('lscreen').style.display='flex';document.getElementById('lpass').value='';document.getElementById('luser').value='';}
+function logout(){S.u=null;DATOS_LISTOS=false;EMP.length=0;TAR.length=0;REGS.length=0;COORDS.length=0;document.getElementById('app').style.display='none';document.getElementById('lscreen').style.display='flex';document.getElementById('lpass').value='';document.getElementById('luser').value='';}
 
 // ══════════════════════════════════════════
 // POBLAR SELECTS (después del login)
@@ -1888,11 +1908,32 @@ function closeSB(){document.getElementById('sidebar').classList.remove('on');doc
 var LOTE = []; // registros pendientes de enviar
 
 function initReg(){
+  // Si los datos aún no cargaron, esperar
+  if(!DATOS_LISTOS){
+    document.getElementById('rform').style.display='none';
+    var waiting=document.getElementById('reg-waiting');
+    if(!waiting){
+      waiting=document.createElement('div');
+      waiting.id='reg-waiting';
+      waiting.className='alrt ag';
+      waiting.innerHTML='⏳ Cargando empleados y tarifas de tu sede... por favor espera.';
+      document.getElementById('p-registro').insertBefore(waiting, document.getElementById('rform'));
+    }
+    waiting.style.display='flex';
+    // Reintentar cada 500ms hasta que carguen
+    setTimeout(function(){initReg();}, 600);
+    return;
+  }
+  // Datos listos — ocultar mensaje de espera
+  var waiting=document.getElementById('reg-waiting');
+  if(waiting) waiting.style.display='none';
   document.getElementById('rform').style.display='block';
+  // Asegurar que admin esté poblado
+  var radm=document.getElementById('r-admin');
+  if(radm&&!radm.value&&S.adm) radm.value=S.adm;
   if(!document.getElementById('tw').children.length){
     S.tc=0; chgTipo(); addT();
   } else {
-    // Actualizar tarifas en tareas ya abiertas por si cargaron después
     rebuilTarSelects();
   }
   updSemLabel();
@@ -2219,7 +2260,7 @@ function agregarAlLote(){
         var q=document.getElementById('q'+i);
         if(!q) continue;
         var cant=parseFloat(q.value)||0;
-        if(cant<=0){msgR('⚠ La cantidad de la tarea '+i+' debe ser mayor a 0','r');return;}
+        if(cant<0){msgR('⚠ La cantidad de la tarea '+i+' no puede ser negativa','r');return;}
         var obsVal=(document.getElementById('obs'+i)&&document.getElementById('obs'+i).value||'').trim();
         // Validar observación obligatoria para AL CONTRATO
         if(o.value==='AG1000001'&&!obsVal){
