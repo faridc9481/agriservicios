@@ -3078,41 +3078,6 @@ function calcInfFac(){
     +'<td style="color:var(--v)"><strong>'+cop(tVal-tRet)+'</strong></td>'
     +'<td></td></tr>';
 }
-function swFac(s,btn){['sal','ing','mob','inf'].forEach(function(x){document.getElementById('fac-'+x).style.display=x===s?'block':'none';});document.querySelectorAll('#p-fac .tab').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');if(s==='sal')carSal();}
-
-function carSal(){
-  var sem=document.getElementById('fs-sem')&&document.getElementById('fs-sem').value||'16';
-  var data=REGS.filter(function(r){return r.sem===sem;});
-  var byC={};
-  data.forEach(function(r){if(!byC[r.coord])byC[r.coord]={coord:r.coord,adm:r.adm,cobro:0,mob:0};byC[r.coord].cobro+=r.cobro;});
-  MOBS.filter(function(m){return m.sem===sem;}).forEach(function(m){if(!byC[m.coord])byC[m.coord]={coord:m.coord,adm:m.adm,cobro:0,mob:0};byC[m.coord].mob+=m.val;});
-  var rows=Object.values(byC).map(function(r){var fact=FACTS.filter(function(f){return f.sem===sem&&f.adm===r.adm;}).reduce(function(s,f){return s+f.val;},0);var tot=r.cobro+r.mob;var saldo=tot-fact;return Object.assign({},r,{tot:tot,fact:fact,saldo:saldo});});
-  var tC=rows.reduce(function(s,r){return s+r.cobro;},0);
-  var tF=rows.reduce(function(s,r){return s+r.fact;},0);
-  var tS=rows.reduce(function(s,r){return s+r.saldo;},0);
-  document.getElementById('fs-c').textContent=cop(tC);
-  document.getElementById('fs-f').textContent=cop(tF);
-  document.getElementById('fs-s').textContent=cop(tS);
-  document.getElementById('fs-tb').innerHTML=rows.length?rows.map(function(r){return'<tr><td><strong>'+r.coord+'</strong></td><td>'+r.adm+'</td><td>'+cop(r.cobro)+'</td><td>'+cop(r.mob)+'</td><td><strong>'+cop(r.tot)+'</strong></td><td>'+cop(r.fact)+'</td><td style="color:'+(r.saldo>0?'var(--r)':r.saldo<0?'var(--vc)':'var(--g3)')+'"><strong>'+(r.saldo>0?'Pend: ':'Favor: ')+cop(Math.abs(r.saldo))+'</strong></td></tr>';}).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--g3)">Sin datos</td></tr>';
-  document.getElementById('fs-tf').innerHTML='<tr><td colspan="2"><strong>TOTAL</strong></td><td><strong>'+cop(tC)+'</strong></td><td>—</td><td><strong>'+cop(tC)+'</strong></td><td><strong>'+cop(tF)+'</strong></td><td><strong>'+cop(tS)+'</strong></td></tr>';
-}
-
-function saveFac(){var sem=document.getElementById('fi-sem').value;var adm=document.getElementById('fi-adm').value;var val=parseFloat(document.getElementById('fi-val').value)||0;var nro=document.getElementById('fi-nro').value;var obs=document.getElementById('fi-obs').value;if(!adm||val<=0){alert('Completa administrador y valor');return;}FACTS.push({id:'f'+Date.now(),sem:sem,adm:adm,val:val,nro:nro,obs:obs});document.getElementById('fi-val').value='';document.getElementById('fi-nro').value='';document.getElementById('fi-obs').value='';renderFacts();}
-function renderFacts(){document.getElementById('fi-tb').innerHTML=FACTS.length?FACTS.map(function(f){return'<tr><td><span class="bdg ba2">S'+f.sem+'</span></td><td>'+f.adm+'</td><td>'+(f.nro||'—')+'</td><td><strong>'+cop(f.val)+'</strong></td><td>'+(f.obs||'—')+'</td><td class="no-print"><button class="btn br" style="padding:2px 8px;font-size:11px" onclick="FACTS=FACTS.filter(function(x){return x.id!==\''+f.id+'\';});renderFacts()">✕</button></td></tr>';}).join(''):'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--g3)">Sin facturas</td></tr>';}
-function saveMob(){var sem=document.getElementById('mb-sem').value;var co=document.getElementById('mb-co').value;var val=parseFloat(document.getElementById('mb-val').value)||0;var obs=document.getElementById('mb-obs').value;if(!co||val<=0){alert('Completa coordinador y valor');return;}var adm=USUARIOS.c[co]?USUARIOS.c[co].adm:'';MOBS.push({id:'m'+Date.now(),sem:sem,coord:co,adm:adm,val:val,obs:obs});document.getElementById('mb-val').value='';document.getElementById('mb-obs').value='';renderMobs();}
-function renderMobs(){document.getElementById('mb-tb').innerHTML=MOBS.length?MOBS.map(function(m){return'<tr><td><span class="bdg ba2">S'+m.sem+'</span></td><td>'+m.coord+'</td><td>'+m.adm+'</td><td><strong>'+cop(m.val)+'</strong></td><td>'+(m.obs||'—')+'</td></tr>';}).join(''):'<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--g3)">Sin registros</td></tr>';}
-
-function calcIS(){
-  var s1=parseInt(document.getElementById('fi2-s1').value)||1;
-  var s2=parseInt(document.getElementById('fi2-s2').value)||52;
-  var fAdm=document.getElementById('fi2-adm').value;
-  var rows=[];
-  for(var i=s1;i<=s2;i++){var sem=String(i).padStart(2,'0');var data=REGS.filter(function(r){return r.sem===sem;});var byC={};data.forEach(function(r){if(!byC[r.coord])byC[r.coord]={coord:r.coord,adm:r.adm,sem:sem,cobro:0,mob:0};byC[r.coord].cobro+=r.cobro;});MOBS.filter(function(m){return m.sem===sem;}).forEach(function(m){if(!byC[m.coord])byC[m.coord]={coord:m.coord,adm:m.adm,sem:sem,cobro:0,mob:0};byC[m.coord].mob+=m.val;});Object.values(byC).forEach(function(r){if(fAdm&&r.adm!==fAdm)return;var fact=FACTS.filter(function(f){return f.sem===sem&&f.adm===r.adm;}).reduce(function(s,f){return s+f.val;},0);var tot=r.cobro+r.mob;var saldo=tot-fact;rows.push(Object.assign({},r,{tot:tot,fact:fact,saldo:saldo}));});}
-  var tC=rows.reduce(function(s,r){return s+r.tot;},0);var tF=rows.reduce(function(s,r){return s+r.fact;},0);var tS=rows.reduce(function(s,r){return s+r.saldo;},0);
-  document.getElementById('fi2-tb').innerHTML=rows.length?rows.map(function(r){return'<tr><td><span class="bdg ba2">S'+r.sem+'</span></td><td>'+r.coord+'</td><td>'+r.adm+'</td><td>'+cop(r.cobro)+'</td><td>'+cop(r.mob)+'</td><td>'+cop(r.tot)+'</td><td>'+cop(r.fact)+'</td><td style="color:'+(r.saldo>0?'var(--r)':r.saldo<0?'var(--vc)':'var(--g3)')+'"><strong>'+cop(r.saldo)+'</strong></td><td><span class="bdg '+(r.saldo>0?'br2':r.saldo<0?'bv2':'bg2')+'">'+(r.saldo>0?'Pendiente':r.saldo<0?'A favor':'Paz y salvo')+'</span></td></tr>';}).join(''):'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--g3)">Sin datos</td></tr>';
-  document.getElementById('fi2-tf').innerHTML=rows.length?'<tr><td colspan="5"><strong>TOTAL</strong></td><td><strong>'+cop(tC)+'</strong></td><td><strong>'+cop(tF)+'</strong></td><td><strong>'+cop(tS)+'</strong></td><td>—</td></tr>':'';
-}
-
 // ══════════════════════════════════════════
 // MODAL EDITAR
 // ══════════════════════════════════════════
