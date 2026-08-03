@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>En mantenimiento · Agriservicios del Valle</title>
+<meta name="description" content="La plataforma de Agriservicios del Valle está en mantenimiento hoy. Vuelve a estar disponible mañana.">
+<style>
+  :root{
+    --field:#153328;
+    --field-2:#1c4232;
+    --cane:#e0b458;
+    --leaf:#6aa87f;
+    --text:#eef3ec;
+    --muted:#a6c1b2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    color:var(--text);
+    background:radial-gradient(120% 100% at 50% 0%, var(--field-2) 0%, var(--field) 60%);
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:2rem 1.5rem 0;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  main{
+    max-width:34rem;
+    width:100%;
+    text-align:center;
+    padding-bottom:4rem;
+  }
+  .seedling{
+    width:52px;height:52px;margin:0 auto 2rem;
+    display:block;
+  }
+  .seedling .leaf{transform-origin:12px 22px}
+  .seedling .leaf-r{transform-origin:12px 22px}
+  @media (prefers-reduced-motion:no-preference){
+    .seedling .leaf{animation:sway 5s ease-in-out infinite alternate}
+    .seedling .leaf-r{animation:sway-r 5s ease-in-out infinite alternate}
+  }
+  @keyframes sway{from{transform:rotate(-4deg)}to{transform:rotate(3deg)}}
+  @keyframes sway-r{from{transform:rotate(4deg)}to{transform:rotate(-3deg)}}
+  .eyebrow{
+    font-size:.78rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--cane);
+    font-weight:600;
+    margin-bottom:1.25rem;
+  }
+  h1{
+    font-size:clamp(1.9rem,6vw,2.9rem);
+    line-height:1.12;
+    font-weight:700;
+    letter-spacing:-.01em;
+    margin-bottom:1.25rem;
+  }
+  h1 .accent{color:var(--cane)}
+  p{
+    color:var(--muted);
+    font-size:clamp(1rem,2.6vw,1.12rem);
+    max-width:28rem;
+    margin:0 auto;
+  }
+  .rule{
+    width:56px;height:2px;
+    background:var(--cane);
+    border:0;border-radius:2px;
+    margin:2rem auto;
+    opacity:.8;
+  }
+  .note{
+    font-size:.95rem;
+    color:var(--leaf);
+  }
+  .foot{
+    margin-top:2.5rem;
+    font-size:.8rem;
+    letter-spacing:.04em;
+    color:var(--muted);
+    opacity:.7;
+  }
+  /* Surcos: horizonte de campo cultivado en perspectiva */
+  .furrows{
+    position:fixed;
+    left:0;right:0;bottom:0;
+    width:100%;
+    height:26vh;
+    min-height:130px;
+    pointer-events:none;
+    z-index:-1;
+  }
+</style>
+</head>
+<body>
+  <main>
+    <svg class="seedling" viewBox="0 0 24 32" fill="none" aria-hidden="true">
+      <path d="M12 30 V16" stroke="#6aa87f" stroke-width="1.6" stroke-linecap="round"/>
+      <path class="leaf" d="M12 22 C6 21 3 17 3 12 C9 12 12 16 12 22 Z" fill="#6aa87f"/>
+      <path class="leaf-r" d="M12 20 C18 19 21 15 21 10 C15 10 12 14 12 20 Z" fill="#e0b458"/>
+    </svg>
+
+    <p class="eyebrow">Agriservicios del Valle</p>
+    <h1>La plataforma está en <span class="accent">mantenimiento</span> hoy</h1>
+    <p>Hoy estamos actualizando el sistema, así que la página no estará disponible durante el día. Mañana 04 de Agosto de 2026 vuelve a funcionar con normalidad despues de las 2:00 pm.</p>
+
+    <hr class="rule">
+
+    <p class="note">Los reportes de nómina se reciben de nuevo a partir de mañana. Si tienes algo urgente, escribe a la administración.</p>
+
+    <p class="foot">La Paila, Valle del Cauca</p>
+  </main>
+
+  <svg class="furrows" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1c4232"/>
+        <stop offset="100%" stop-color="#0f251c"/>
+      </linearGradient>
+    </defs>
+    <path d="M0 90 L1200 90 L1200 300 L0 300 Z" fill="url(#soil)"/>
+    <g stroke="#6aa87f" stroke-opacity="0.35" stroke-width="2" fill="none">
+      <path d="M600 90 L120 300"/>
+      <path d="M600 90 L360 300"/>
+      <path d="M600 90 L600 300"/>
+      <path d="M600 90 L840 300"/>
+      <path d="M600 90 L1080 300"/>
+    </g>
+    <g stroke="#e0b458" stroke-opacity="0.5" stroke-width="2" fill="none">
+      <path d="M600 90 L-120 300"/>
+      <path d="M600 90 L1320 300"/>
+    </g>
+    <line x1="0" y1="90" x2="1200" y2="90" stroke="#e0b458" stroke-opacity="0.55" stroke-width="1.5"/>
+  </svg>
+</body>
+</html>
